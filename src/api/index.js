@@ -4,15 +4,15 @@ export default {
   async get(url, options = {}) {
     try {
       const response = await fetch(url, options);
+      const { data, message } = await response.json();
 
       if (response.ok) {
-        const { data } = await response.json();
         return data;
       }
 
-      return new Error(DEFAULT_ERR_MSG);
+      return new Error(message || DEFAULT_ERR_MSG);
     } catch (err) {
-      return new Error(err);
+      return new Error(err.message);
     }
   },
 };

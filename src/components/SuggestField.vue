@@ -19,6 +19,9 @@
       >
     </div>
 
+    <template v-if="selectedMaxCount && maxCount > 1">Выбрано макс. кол-во элементов</template>
+    <template v-if="error">{{ error.message }}</template>
+
     <DropList v-if="dropOpened">
       <component
         :is="suggestComponent"
@@ -66,6 +69,7 @@ export default {
       dropOpened: false,
       debouncedFetchSuggests: () => {},
       apiController: null,
+      error: '',
     };
   },
   computed: {
@@ -75,13 +79,15 @@ export default {
   },
   watch: {
     searchSubstr() {
+      this.error = '';
+
       if (this.searchSubstr.length >= MIN_CHARS_FOR_REQUEST) {
         this.debouncedFetchSuggests();
         return;
       }
 
       this.apiController?.abort();
-      this.debouncedFetchSuggests.cancel?.();
+      this.debouncedFetchSuggests.cancel();
     },
   },
   methods: {
@@ -95,15 +101,20 @@ export default {
           { signal: this.apiController.signal },
         );
 
-        this.applySuggests(result);
+        this.parseResponse(result);
         return;
       }
 
       const result = await api.get(this.urlTemplate.replace('{{substr}}', this.searchSubstr));
-      this.applySuggests(result);
+      this.parseResponse(result);
     },
-    applySuggests(suggests) {
-      this.suggests = suggests;
+    parseResponse(result) {
+      if (!Array.isArray(result)) {
+        this.error = result;
+        return;
+      }
+
+      this.suggests = result;
       this.openDrop();
     },
     openDrop() {
@@ -120,7 +131,7 @@ export default {
       if (this.selectedSuggests.includes(suggest)) return;
 
       this.selectedSuggests.push(suggest);
-      this.$emit('selected', suggest);
+      this.$emit('change', this.selectedSuggests);
 
       if (this.selectedMaxCount) {
         this.searchSubstr = '';
@@ -164,7 +175,7 @@ export default {
     },
   },
   created() {
-    this.debouncedFetchSuggests = debounce(this.fetchSuggests, 500);
+    this.debouncedFetchSuggests = debounce(this.fetchSuggests, 300);
   },
 };
 </script>
