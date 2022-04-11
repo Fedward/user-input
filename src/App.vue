@@ -1,16 +1,24 @@
 <template>
   <div id="app">
-    <SuggestField />
+    <SuggestField
+      :suggest-component="AccountInfo"
+    />
   </div>
 </template>
 
 <script>
 import SuggestField from './components/SuggestField.vue';
+import AccountInfo from './components/AccountInfo.vue';
 
 export default {
   name: 'App',
   components: {
     SuggestField,
+  },
+  data() {
+    return {
+      AccountInfo,
+    };
   },
 };
 </script>

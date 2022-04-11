@@ -6,21 +6,30 @@
     </div>
 
     <DropList v-if="suggests.length">
-      <AccountInfo v-for="(suggest, i) in suggests" :key="i" :account="suggest" />
+      <component
+        :is="suggestComponent"
+        v-for="(suggest, i) in suggests"
+        :key="i"
+        v-bind="suggest"
+      />
     </DropList>
   </div>
 </template>
 
 <script>
+import Vue from 'vue';
 import api from '../api';
 import DropList from './DropList.vue';
-import AccountInfo from './AccountInfo.vue';
 
 export default {
   name: 'UserInput',
   components: {
     DropList,
-    AccountInfo,
+  },
+  props: {
+    suggestComponent: {
+      validator: (val) => val instanceof Vue,
+    },
   },
   data() {
     return {

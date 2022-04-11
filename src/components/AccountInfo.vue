@@ -2,18 +2,18 @@
   <div class="account-info">
     <div class="account-info__avatar-wrap">
       <img
-        :src="account.avatar || '/icons/no-photo.png'"
+        :src="avatar || '/icons/no-photo.png'"
         alt=""
         class="account-info__avatar"
       >
     </div>
     <div class="account-info__info">
       <div class="account-info__title">
-        {{ account.name || account.alias }}
+        {{ name || alias }}
       </div>
 
-      <div v-if="account.name || isCompany" class="account-info__subtitle">
-        {{ isCompany ? 'Компания' : `@${account.alias}` }}
+      <div v-if="name || isCompany" class="account-info__subtitle">
+        {{ isCompany ? 'Компания' : `@${alias}` }}
       </div>
     </div>
   </div>
@@ -23,14 +23,14 @@
 export default {
   name: 'AccountInfo',
   props: {
-    account: {
-      type: Object,
-      required: true,
-    },
+    avatar: String,
+    name: String,
+    alias: String,
+    type: String,
   },
   computed: {
     isCompany() {
-      return this.account.type === 'company';
+      return this.type === 'company';
     },
   },
 };
