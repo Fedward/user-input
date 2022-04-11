@@ -41,7 +41,7 @@ import DropList from './DropList.vue';
 const MIN_CHARS_FOR_REQUEST = 3;
 
 export default {
-  name: 'UserInput',
+  name: 'SuggestField',
   components: {
     DropList,
   },
@@ -57,6 +57,7 @@ export default {
       searchSubstr: '',
       suggests: [],
       selectedSuggests: [{ alias: 'test' }],
+      highlightedEl: null,
       debouncedFetchSuggests: () => {},
     };
   },
@@ -87,9 +88,37 @@ export default {
         this.searchSubstr = '';
       }
     },
-    downHandler() {
-      console.log('te');
-      this.$refs.suggests?.[0]?.$el.focus();
+    keydownHandler({ key }) {
+      const keys = ['ArrowDown', 'ArrowUp', 'Enter'];
+      if (!keys.includes(key)) return;
+
+      if (!this.highlightedEl) {
+        this.highlightedEl = this.$refs.suggests?.[0]?.$el;
+        this.highlightedEl.focus();
+        return;
+      }
+
+      if (key === 'ArrowDown') {
+        const nextEl = this.highlightedEl.nextElementSibling;
+
+        if (!nextEl) return;
+
+        this.highlightedEl = nextEl;
+        nextEl.focus();
+      }
+
+      if (key === 'ArrowUp') {
+        const prevEl = this.highlightedEl.previousElementSibling;
+
+        if (!prevEl) return;
+
+        this.highlightedEl = prevEl;
+        prevEl.focus();
+      }
+
+      if (key === 'Enter') {
+        this.highlightedEl.click();
+      }
     },
   },
   created() {
