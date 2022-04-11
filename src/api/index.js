@@ -1,9 +1,9 @@
 const DEFAULT_ERR_MSG = 'Что-то пошло не так...';
 
 export default {
-  async getSuggests(query) {
+  async get(url, options = {}) {
     try {
-      const response = await fetch(`https://habr.com/kek/v2/publication/suggest-mention?q=${query}`);
+      const response = await fetch(url, options);
 
       if (response.ok) {
         const { data } = await response.json();

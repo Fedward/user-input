@@ -11,15 +11,15 @@
       <input
         v-if="!selectedMaxCount"
         v-model="searchSubstr"
+        ref="input"
         :placeholder="placeholder"
         type="text"
         class="suggest-field__input"
         id="suggest"
-        @keydown.down="downHandler"
       >
     </div>
 
-    <DropList v-if="suggests.length && !selectedMaxCount">
+    <DropList v-if="dropOpened">
       <component
         :is="suggestComponent"
         ref="suggests"
@@ -51,6 +51,10 @@ export default {
     suggestComponent: { type: Object, required: true },
     aliasKey: { type: String, default: 'alias' },
     maxCount: { type: Number, default: Infinity },
+    urlTemplate: {
+      type: String,
+      default: 'https://habr.com/kek/v2/publication/suggest-mention?q={{substr}}',
+    },
   },
   data() {
     return {
@@ -58,6 +62,7 @@ export default {
       suggests: [],
       selectedSuggests: [{ alias: 'test' }],
       highlightedEl: null,
+      dropOpened: false,
       debouncedFetchSuggests: () => {},
     };
   },
@@ -75,8 +80,19 @@ export default {
   },
   methods: {
     async fetchSuggests() {
-      const result = await api.getSuggests(this.searchSubstr);
+      const result = await api.get(this.urlTemplate.replace('{{substr}}', this.searchSubstr));
       this.suggests = result;
+      this.openDrop();
+    },
+    openDrop() {
+      if (!this.suggests.length || this.selectedMaxCount) return;
+
+      this.dropOpened = true;
+      document.addEventListener('keydown', this.keydownHandler);
+    },
+    closeDrop() {
+      this.dropOpened = false;
+      document.removeEventListener('keydown', this.keydownHandler);
     },
     selectSuggest(suggest) {
       if (this.selectedSuggests.includes(suggest)) return;
@@ -88,9 +104,9 @@ export default {
         this.searchSubstr = '';
       }
     },
-    keydownHandler({ key }) {
+    keydownHandler(e) {
       const keys = ['ArrowDown', 'ArrowUp', 'Enter'];
-      if (!keys.includes(key)) return;
+      if (!keys.includes(e.key)) return;
 
       if (!this.highlightedEl) {
         this.highlightedEl = this.$refs.suggests?.[0]?.$el;
@@ -98,7 +114,7 @@ export default {
         return;
       }
 
-      if (key === 'ArrowDown') {
+      if (e.key === 'ArrowDown') {
         const nextEl = this.highlightedEl.nextElementSibling;
 
         if (!nextEl) return;
@@ -107,16 +123,20 @@ export default {
         nextEl.focus();
       }
 
-      if (key === 'ArrowUp') {
+      if (e.key === 'ArrowUp') {
         const prevEl = this.highlightedEl.previousElementSibling;
 
-        if (!prevEl) return;
+        if (!prevEl) {
+          e.preventDefault();
+          this.$refsinput.focus();
+          return;
+        }
 
         this.highlightedEl = prevEl;
         prevEl.focus();
       }
 
-      if (key === 'Enter') {
+      if (e.key === 'Enter') {
         this.highlightedEl.click();
       }
     },
