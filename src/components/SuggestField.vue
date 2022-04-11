@@ -39,6 +39,7 @@ import api from '../api';
 import DropList from './DropList.vue';
 
 const MIN_CHARS_FOR_REQUEST = 3;
+const canAbort = typeof AbortController === 'function';
 
 export default {
   name: 'SuggestField',
@@ -64,6 +65,7 @@ export default {
       highlightedEl: null,
       dropOpened: false,
       debouncedFetchSuggests: () => {},
+      apiController: null,
     };
   },
   computed: {
@@ -75,13 +77,33 @@ export default {
     searchSubstr() {
       if (this.searchSubstr.length >= MIN_CHARS_FOR_REQUEST) {
         this.debouncedFetchSuggests();
+        return;
       }
+
+      this.apiController?.abort();
+      this.debouncedFetchSuggests.cancel?.();
     },
   },
   methods: {
     async fetchSuggests() {
+      if (canAbort) {
+        this.apiController?.abort();
+        this.apiController = new AbortController();
+
+        const result = await api.get(
+          this.urlTemplate.replace('{{substr}}', this.searchSubstr),
+          { signal: this.apiController.signal },
+        );
+
+        this.applySuggests(result);
+        return;
+      }
+
       const result = await api.get(this.urlTemplate.replace('{{substr}}', this.searchSubstr));
-      this.suggests = result;
+      this.applySuggests(result);
+    },
+    applySuggests(suggests) {
+      this.suggests = suggests;
       this.openDrop();
     },
     openDrop() {
