@@ -2,6 +2,7 @@
   <div id="app">
     <SuggestField
       :suggest-component="AccountInfo"
+      :max-count="3"
     />
   </div>
 </template>

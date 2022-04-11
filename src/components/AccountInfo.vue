@@ -42,6 +42,11 @@ export default {
   gap: 8px;
   align-items: center;
   padding: 16px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #efefef;
+  }
 
   &__avatar-wrap {
     display: flex;
