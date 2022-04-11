@@ -1,6 +1,12 @@
 <template>
   <div class="account-info">
-    <img :src="account.avatar || '/assets/icons/close.png'" alt="" class="account-info__avatar">
+    <div class="account-info__avatar-wrap">
+      <img
+        :src="account.avatar || '/icons/no-photo.png'"
+        alt=""
+        class="account-info__avatar"
+      >
+    </div>
     <div class="account-info__info">
       <div class="account-info__title">
         {{ account.name || account.alias }}
@@ -33,12 +39,23 @@ export default {
 <style lang="less" scoped>
 .account-info {
   display: flex;
-  gap: 4px;
+  gap: 8px;
   align-items: center;
+  padding: 16px;
+
+  &__avatar-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    overflow: hidden;
+  }
 
   &__avatar {
-    width: 30px;
-    height: 30px;
+    max-width: 100%;
+    max-height: 100%;
   }
 }
 </style>
