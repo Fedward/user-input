@@ -20,10 +20,12 @@
     </div>
 
     <template v-if="selectedMaxCount && maxCount > 1">Выбрано макс. кол-во элементов</template>
-    <template v-if="error">{{ error.message }}</template>
+    <template v-if="error">{{ error }}</template>
 
-    <DropList v-if="dropOpened">
+    <DropList v-if="dropOpened || loading">
+      <template v-if="loading">Загрузка...</template>
       <component
+        v-else
         :is="suggestComponent"
         ref="suggests"
         v-for="suggest in suggests"
@@ -69,6 +71,7 @@ export default {
       dropOpened: false,
       debouncedFetchSuggests: () => {},
       apiController: null,
+      loading: false,
       error: '',
     };
   },
@@ -110,7 +113,7 @@ export default {
     },
     parseResponse(result) {
       if (!Array.isArray(result)) {
-        this.error = result;
+        this.error = result.name === 'AbortError' ? '' : result.message;
         return;
       }
 
